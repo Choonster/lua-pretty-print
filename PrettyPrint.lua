@@ -1,6 +1,8 @@
 --[[
 
 PrettyPrint
+Original URL: https://github.com/Anaminus/lua-pretty-print
+Original Author: Anaminus
 
   Converts a table to a string with human-readable syntax.
 
@@ -9,6 +11,12 @@ Usage
 	PrettyPrint = require 'PrettyPrint'
 	pretty_output = PrettyPrint( table )
 
+	
+Edited by Choonster (https://github.com/Choonster/lua-pretty-print)
+Edits:
+	- Always quotes strings keys
+	- Uses commas instead of semicolons for separators
+	- Doesn't insert return before the printed table
 ]]
 
 local PrettyPrint do
@@ -37,11 +45,7 @@ local PrettyPrint do
 	local function formatKey(key,seq)
 		if seq then return "" end
 		if type(key) == 'string' then
-			if key:match('^[%a_][%w_]-$') == key then -- key is variable name
-				return key .. " = "
-			else
-				return "[" .. string.format('%q',key) .. "] = "
-			end
+			return "[" .. string.format('%q',key) .. "] = "
 		else
 			return "[" .. tostring(key) .. "] = "
 		end
@@ -117,28 +121,28 @@ local PrettyPrint do
 									output = output .. ", "
 								end
 							end
-							output = output .. "};\n"
+							output = output .. "},\n"
 						else -- table is not primitive array
 							output = output
 							.. indentStr .. formatKey(key,in_seq) .. "{\n"
 							.. traverseTable(value,tableRef,indent+1)
-							.. indentStr .. "};\n"
+							.. indentStr .. "},\n"
 						end
 					else -- table is empty
-						output = output .. indentStr .. formatKey(key,in_seq) .. "{};\n"
+						output = output .. indentStr .. formatKey(key,in_seq) .. "{},\n"
 					end
 
 					tableRef[value] = nil
 				end
 			elseif isPrimitiveType[type(value)] then
-				output = output .. indentStr .. formatKey(key,in_seq) .. formatValue(value) .. ";\n"
+				output = output .. indentStr .. formatKey(key,in_seq) .. formatValue(value) .. ",\n"
 			end
 		end
 		return output
 	end
 
 	function PrettyPrint(dataTable)
-		return "return {\n" .. traverseTable(dataTable,{[dataTable]=true},1) .. "}"
+		return "{\n" .. traverseTable(dataTable,{[dataTable]=true},1) .. "}"
 	end
 end
 
